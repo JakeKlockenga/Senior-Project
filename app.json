@@ -1,0 +1,11 @@
+{
+  "expo": {
+    "name": "ocrTest",
+    "slug": "ocrTest",
+    "version": "1.0.0",
+    "assetBundlePatterns": [
+      "**/*"
+    ]
+  },
+  "name": "ocrTest"
+}
