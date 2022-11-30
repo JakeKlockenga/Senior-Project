@@ -1,15 +1,13 @@
 import 'react-native-gesture-handler';
-import { StatusBar } from 'expo-status-bar';
 import React, {useState, useEffect, useRef} from 'react';
-import { StyleSheet, Text, View, Button, Image, SafeAreaView, TouchableOpacity, PermissionsAndroid, Alert, Platform } from 'react-native';
-import TextRecognition from 'react-native-text-recognition';
+import { StyleSheet, Text, View, Button, Image, TouchableOpacity, PermissionsAndroid, Alert, Platform, StatusBar } from 'react-native';
+import TextRecognition from '@react-native-ml-kit/text-recognition';
 import {launchCamera, launchImageLibrary} from "react-native-image-picker";
 import ActionSheet1 from 'react-native-ui-action-sheet';
 import ActionSheet2 from 'react-native-ui-action-sheet';
 import { NavigationContainer } from '@react-navigation/native';
-import { createStackNavigator } from '@react-navigation/stack';
-import { Appbar, Menu, Provider, Divider } from 'react-native-paper';
-import { Grayscale, ColorMatrix, concatColorMatrices, invert, contrast, saturate, brightness, grayscale } from 'react-native-color-matrix-image-filters'
+import { createDrawerNavigator } from '@react-navigation/drawer';
+import { ColorMatrix, concatColorMatrices, contrast, saturate, brightness, grayscale } from 'react-native-color-matrix-image-filters'
 import {captureRef} from 'react-native-view-shot';
 import {CameraRoll} from '@react-native-camera-roll/camera-roll';
 import ActionSheet3 from 'react-native-ui-action-sheet';
@@ -26,7 +24,7 @@ function MainScreen() {
 
     useEffect(()=>{
         if (text1 != null && text2 != null) {
-            if (text1.toString() == text2.toString())
+            if (JSON.stringify(text1.text).replace(/\\n/g, ' ') == JSON.stringify(text2.text).replace(/\\n/g, ' '))
             {
                 setCompareText("Image text matches!");
             }
@@ -65,7 +63,9 @@ function MainScreen() {
 		<View style={styles.container}>
 			<Text style={{fontSize: 3,}}>{' '}</Text>
 			{image1?<Image source={{uri: image1.assets[0].uri,}} style={{flex: 1, width: '100%', height: '100%', resizeMode: 'contain',}}/>:null}
-			{text1?<Text>Recognized text is {text1}</Text>:null}
+			<View style={{width: 391}}>
+			{text1?<Text>Recognized text is {JSON.stringify(text1.text).replace(/\\n/g, ' ')}</Text>:null}
+			</View>
 			<View style={{padding: 5,}}>
 				<Button title="Add Picture 1" onPress={()=>ActionSheetRef1.current.show()}/>
 			</View>
@@ -79,7 +79,9 @@ function MainScreen() {
 				cancelTitle="cancel"
 			/>
 			{image2?<Image source={{uri:image2.assets[0].uri, }} style={{flex: 1, width: '100%', height: '100%', resizeMode: 'contain',}}/>:null}
-			{text2?<Text>Recognized text is {text2}</Text>:null}
+			<View style={{width: 391}}>
+			{text2?<Text>Recognized text is {JSON.stringify(text2.text).replace(/\\n/g, ' ')}</Text>:null}
+			</View>
 			<View style={{padding: 5,}}>
 				<Button title="Add Picture 2" onPress={()=>ActionSheetRef2.current.show()}/>
 			</View>
@@ -92,8 +94,8 @@ function MainScreen() {
 				]}
 				cancelTitle="cancel"
 			/>
-			<Text style={{color: text1 && text2 && text1.toString() == text2.toString() ? 'green':'red', fontSize:30, textAlign:'center'}}>{compareText}</Text>
-			<StatusBar style="auto" backgroundColor="whitesmoke"/>
+			<Text style={{color: text1 && text2 && JSON.stringify(text1.text).replace(/\\n/g, ' ') == JSON.stringify(text2.text).replace(/\\n/g, ' ') ? 'green':'red', fontSize:30, textAlign:'center'}}>{compareText}</Text>
+			<StatusBar style="auto"/>
 		</View>
 	);
 }
@@ -144,7 +146,7 @@ function ImageFilterScreen() {
 	return (
 		<>
 			<View style={styles.container1} ref={viewRef}>
-				<ColorMatrix matrix={concatColorMatrices(grayscale(1), brightness(0.6), contrast(1.5), saturate(3))}>
+				<ColorMatrix matrix={concatColorMatrices(grayscale(1))}>
 					{image1?<Image source={{uri: image1.assets[0].uri,}} style={styles.image}/>:null}
 				</ColorMatrix>
 			</View>
@@ -169,48 +171,20 @@ function ImageFilterScreen() {
 	);
 }
 
-function NavigationBar({ navigation, back }) {
-	const [visible, setVisible] = useState(false);
-	const openMenu = () => setVisible(true);
-	const closeMenu = () => setVisible(false);
-
-	return (
-		<Appbar.Header style={{backgroundColor:'royalblue'}}>
-			<View style={{paddingTop: 13,}}>
-				{back ? <Appbar.BackAction onPress={navigation.goBack}/>:null}
-			</View>
-			<View style={{paddingTop: 20,}}>
-				<Appbar.Content title="ColdSpring Plate Checking"/>
-			</View>
-			{!back ? (
-				<Provider>
-					<View style={{paddingTop: 13, flexDirection: 'row', justifyContent: 'flex-end',}}>
-						<Menu
-							visible={visible}
-							onDismiss={closeMenu}
-							anchor={<Appbar.Action icon="menu" color="white" onPress={openMenu}/>}>
-							<Menu.Item onPress={() => {navigation.navigate('ImageFilter'), setVisible(false)}} title="Image Filter"/>
-							<Divider style={{ height: 1 }}/>
-							<Menu.Item onPress={() => {setVisible(false)}} title="cancel" theme={{colors: {text: 'red' }}}/>
-						</Menu>
-					</View>
-				</Provider>
-			):null}
-		</Appbar.Header>
-	);
-}
-
 export default function App() {
-	const Stack = createStackNavigator();
+	const Drawer = createDrawerNavigator();
 
 	return (
 		<NavigationContainer>
-			<Stack.Navigator
-			initialRouteName="Main"
-			screenOptions={{header: (props) => <NavigationBar {...props}/>,}}>
-				<Stack.Screen name="Main" component={MainScreen}/>
-				<Stack.Screen name="ImageFilter" component={ImageFilterScreen}/>
-			</Stack.Navigator>
+			<Drawer.Navigator useLegacyImplementation			
+				screenOptions={{
+					headerStyle: { backgroundColor: 'royalblue' },
+					headerTintColor: 'white',
+				}}
+			>
+				<Drawer.Screen name="ColdSpring Plate Checking" component={MainScreen} />
+				<Drawer.Screen name="Image Filter" component={ImageFilterScreen} />
+			</Drawer.Navigator>
 		</NavigationContainer>
 	);
 }
