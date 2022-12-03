@@ -1,4 +1,4 @@
-package com.textrecognition.newarchitecture;
+package com.textdetection.newarchitecture;
 
 import android.app.Application;
 import androidx.annotation.NonNull;
@@ -19,9 +19,9 @@ import com.facebook.react.fabric.CoreComponentsRegistry;
 import com.facebook.react.fabric.FabricJSIModuleProvider;
 import com.facebook.react.fabric.ReactNativeConfig;
 import com.facebook.react.uimanager.ViewManagerRegistry;
-import com.textrecognition.BuildConfig;
-import com.textrecognition.newarchitecture.components.MainComponentsRegistry;
-import com.textrecognition.newarchitecture.modules.MainApplicationTurboModuleManagerDelegate;
+import com.textdetection.BuildConfig;
+import com.textdetection.newarchitecture.components.MainComponentsRegistry;
+import com.textdetection.newarchitecture.modules.MainApplicationTurboModuleManagerDelegate;
 import java.util.ArrayList;
 import java.util.List;
 
