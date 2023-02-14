@@ -21,7 +21,7 @@ async function CallGoogleCloudVisionAPI(image) {
 			}
 		]
 	};
-	const response = await fetch(`https://us-vision.googleapis.com/v1/images:annotate?key=${"API_key"}`, {
+	const response = await fetch(`https://us-vision.googleapis.com/v1/images:annotate?key=AIzaSyCNkT4Cr2INlBVBk-4qJOPXlfbEO1_Da60`, {
 		method: 'POST',
 		headers: {
 			Accept: 'application/json',
@@ -42,9 +42,10 @@ export default function App() {
 	const [compareText, setCompareText] = useState("Need two images to compare");
 	const ActionSheetRef1 = useRef();
 	const ActionSheetRef2 = useRef();
+	const noise = [];
 
 	useEffect(()=>{
-		if (text1 != null && text2 != null) {
+		if (text1 != null && text2 != null && text1 != "loading..." && text2 != "loading...") {
 			if (text1 == "no text recognized on this image." && text2 == "no text recognized on this image.")
 			{
 				setCompareText("No text recognized on these images!");
@@ -57,6 +58,36 @@ export default function App() {
 			{
 				setCompareText("Image text does NOT match");
 			}
+			const splitText1 = text1.split(/\s/);
+			const splitText2 = text2.split(/\s/);
+			const matches = [];
+			splitText1.forEach(word =>
+			{
+				let matched = false;
+				if (word.includes(",") || word.includes("."))
+				{
+					word = word.substring(0,word.length-1);
+				}
+				splitText2.forEach(word2 =>
+				{
+					if (word2.includes(",") || word2.includes("."))
+					{
+						word2 = word2.substring(0,word2.length-1);
+					}
+
+					if (word == word2)
+					{
+						matched = true;
+						matches.push(word);
+					}
+				})
+				if (!matched)
+				{
+					noise.push(word);
+				}
+			})
+			console.log("matches: ",matches.flat());
+			console.log("noise: ",noise.flat());
 		}
 	},[text1,text2]);
 
@@ -67,11 +98,11 @@ export default function App() {
 			</View>
 			<Text style={{fontSize: 3,}}>{' '}</Text>
 			{image1?<Image source={{uri: image1}} style={{flex: 1, width: '100%', height: '100%', resizeMode: 'contain',}}/>:null}
-			<View style={{width: 391}}>
+			{/*<View style={{width: 391}}>
 				{text1?<Text>Recognized text is {text1}</Text>:null}
-			</View>
+			</View>*/}
 			<View style={{padding: 5,}}>
-				<Button title="Add Picture 1" onPress={()=>ActionSheetRef1.current.show()}/>
+				<Button title="Add Set Plate" onPress={()=>ActionSheetRef1.current.show()}/>
 			</View>
 			<ActionSheet1
 				ref={ActionSheetRef1}
@@ -98,11 +129,11 @@ export default function App() {
 				cancelTitle="cancel"
 			/>
 			{image2?<Image source={{uri:image2}} style={{flex: 1, width: '100%', height: '100%', resizeMode: 'contain',}}/>:null}
-			<View style={{width: 391}}>
+			{/*<View style={{width: 391}}>
 				{text2?<Text>Recognized text is {text2}</Text>:null}
-			</View>
+			</View>*/}
 			<View style={{padding: 5,}}>
-				<Button title="Add Picture 2" onPress={()=>ActionSheetRef2.current.show()}/>
+				<Button title="Add Design Template" onPress={()=>ActionSheetRef2.current.show()}/>
 			</View>
 			<ActionSheet2
 				ref={ActionSheetRef2}
@@ -129,6 +160,7 @@ export default function App() {
 				cancelTitle="cancel"
 			/>
 			<Text style={{color: text1 && text2 && text1.toString() == text2.toString() ? 'green':'red', fontSize:30, textAlign:'center'}}>{compareText}</Text>
+			{noise ? noise.map(word=><Text>word</Text>) : null}
 			<StatusBar style="auto"/>
 		</View>
 	);
