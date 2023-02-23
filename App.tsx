@@ -21,7 +21,7 @@ async function CallGoogleCloudVisionAPI(image) {
 			}
 		]
 	};
-	const response = await fetch(`https://us-vision.googleapis.com/v1/images:annotate?key=AIzaSyAcAitrpeSPllFuxb45TFrMCbGpKF0qJqs`, {
+	const response = await fetch(`https://us-vision.googleapis.com/v1/images:annotate?key=`, {
 		method: 'POST',
 		headers: {
 			Accept: 'application/json',
