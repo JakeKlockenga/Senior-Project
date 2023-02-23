@@ -45,8 +45,12 @@ async function CallGoogleCloudVisionAPI(image) {
 		})
 		//regex to remove commas separating letters in array after converting it to a string thus leaving only the word
 		let finalWord = wordArray.toString().replace(/\,/g,'')
-		console.log("finalWord: ", finalWord);
-		textArray.push(finalWord);
+		let wordObject =
+			{
+				vertices: word.boundingBox.vertices,
+				word: finalWord
+			}
+		textArray.push(wordObject);
 	})
 	//console.log("recognizedText.pages[0].blocks: ",recognizedText.pages[0].blocks[0].paragraphs[0].words);
 	//above is the array of words per "paragraph".  If we run through each element in this array, it will be each words in the paragraph
