@@ -21,7 +21,7 @@ async function CallGoogleCloudVisionAPI(image) {
 			}
 		]
 	};
-	const response = await fetch(`https://us-vision.googleapis.com/v1/images:annotate?key=key`, {
+	const response = await fetch(`https://us-vision.googleapis.com/v1/images:annotate?key=AIzaSyAcAitrpeSPllFuxb45TFrMCbGpKF0qJqs`, {
 		method: 'POST',
 		headers: {
 			Accept: 'application/json',
@@ -31,6 +31,26 @@ async function CallGoogleCloudVisionAPI(image) {
 	});
 	const result = await response.json();
 	const recognizedText = result.responses[0].fullTextAnnotation;
+	console.log("recognizedText.text: ", recognizedText.text);
+	const textArray = [];
+	recognizedText.pages[0].blocks[0].paragraphs[0].words.forEach(word =>
+	{ //this is taking the words for the first block of text recognized -- there will be multiple blocks per picture
+		let wordArray = [];
+		// this is the bounding box for the word
+		console.log("Bounding box vertices for word: ",word.boundingBox.vertices);
+		// word is not listed in this object as whole, but instead as separate "symbols" which are letters in most cases
+		word.symbols.forEach(letter =>
+		{ //adding each letter to an array so that we can reconstruct them into a word
+			wordArray.push(letter.text);
+		})
+		//regex to remove commas separating letters in array after converting it to a string thus leaving only the word
+		let finalWord = wordArray.toString().replace(/\,/g,'')
+		console.log("finalWord: ", finalWord);
+		textArray.push(finalWord);
+	})
+	//console.log("recognizedText.pages[0].blocks: ",recognizedText.pages[0].blocks[0].paragraphs[0].words);
+	//above is the array of words per "paragraph".  If we run through each element in this array, it will be each words in the paragraph
+	//we will need to then look at the bounding box of each element in this array which will be the bounding box of each word
 	return recognizedText ? recognizedText : {text: "no text recognized on this image."};
 }
 
