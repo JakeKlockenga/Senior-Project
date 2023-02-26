@@ -31,34 +31,32 @@ async function CallGoogleCloudVisionAPI(image) {
 	});
 	const result = await response.json();
 	const recognizedText = result.responses[0].fullTextAnnotation;
-	console.log("recognizedText.text: ", recognizedText.text);
+	//console.log("recognizedText.text: ", recognizedText.text);
 	const textArray = [];
 	recognizedText.pages[0].blocks.forEach(block => {
 		block.paragraphs.forEach(paragraph => {
 			paragraph.words.forEach(word => {
 				let wordArray = [];
 				// this is the bounding box for the word
-				console.log("Bounding box vertices for word: ", word.boundingBox.vertices);
+				//console.log("Bounding box vertices for word: ", word.boundingBox.vertices);
 				// word is not listed in this object as whole, but instead as separate "symbols" which are letters in most cases
 				word.symbols.forEach(letter => { //adding each letter to an array so that we can reconstruct them into a word
 					wordArray.push(letter.text);
 				})
 				//regex to remove commas separating letters in array after converting it to a string thus leaving only the word
-				let finalWord = wordArray.toString().replace(/\,/g, '')
-				let wordObject =
-					{
-						vertices: word.boundingBox.vertices,
-						word: finalWord
-					}
-				textArray.push(wordObject);
+				let finalWord = wordArray.toString().replace(/\,/g, '');
+				if (finalWord.length != 0) {
+					let wordObject =
+						{
+							vertices: word.boundingBox.vertices,
+							word: finalWord
+						}
+					textArray.push(wordObject);
+				}
 			})
 		})
 	})
-	textArray.forEach(word =>
-	{
-		console.log("word.word: ",word.word);
-	})
-	return recognizedText ? recognizedText : {text: "no text recognized on this image."};
+	return textArray ? textArray : {text: "no text recognized on this image."};
 }
 
 export default function App() {
@@ -70,10 +68,11 @@ export default function App() {
 	const ActionSheetRef1 = useRef();
 	const ActionSheetRef2 = useRef();
 	const noise = [];
+	const matches = [];
 
 	useEffect(()=>{
 		if (text1 != null && text2 != null && text1 != "loading..." && text2 != "loading...") {
-			if (text1 == "no text recognized on this image." && text2 == "no text recognized on this image.")
+/*			if (text1 == "no text recognized on this image." && text2 == "no text recognized on this image.")
 			{
 				setCompareText("No text recognized on these images!");
 			}
@@ -84,11 +83,11 @@ export default function App() {
 			else
 			{
 				setCompareText("Image text does NOT match");
-			}
-			const splitText1 = text1.split(/\s/);
-			const splitText2 = text2.split(/\s/);
-			const matches = [];
-			splitText1.forEach(word =>
+			}*/
+			//const splitText1 = text1.split(/\s/);
+			//const splitText2 = text2.split(/\s/);
+			//const matches = [];
+/*			splitText1.forEach(word =>
 			{
 				let matched = false;
 				if (word.includes(",") || word.includes("."))
@@ -114,8 +113,29 @@ export default function App() {
 				}
 			})
 			console.log("matches: ",matches.flat());
-			console.log("noise: ",noise.flat());
+			console.log("noise: ",noise.flat());*/
+			text2.forEach(object2 =>
+			{
+				if (!object2.word.includes(" ") && !object2.word.includes(".") && !object2.word.includes(",") && !object2.word.includes('\n'))
+				{
+					text1.forEach(object1 =>
+					{
+						if (object1.word == object2.word)
+						{
+							matches.push(object1);
+						}
+						else
+						{
+							noise.push(object1);
+						}
+					})
+				}
+			})
 		}
+		matches.forEach(match =>
+		{
+			console.log(match.word);
+		})
 	},[text1,text2]);
 
 	return (
@@ -141,7 +161,7 @@ export default function App() {
 						});
 						setImage1(result.assets[0].uri);
 						const response = await CallGoogleCloudVisionAPI(result.assets[0].base64);
-						setText1(response.text);
+						setText1(response);
 					}},
 					{title: 'Choose Picture 1 from image library', onPress: async () => {
 						let result = await launchImageLibrary({
@@ -150,7 +170,7 @@ export default function App() {
 						setImage1(result.assets[0].uri);
 						setText1("loading...");
 						const response = await CallGoogleCloudVisionAPI(result.assets[0].base64);
-						setText1(response.text);
+						setText1(response);
 					}},
 				]}
 				cancelTitle="cancel"
@@ -172,7 +192,7 @@ export default function App() {
 						});
 						setImage2(result.assets[0].uri);
 						const response = await CallGoogleCloudVisionAPI(result.assets[0].base64);
-						setText2(response.text);
+						setText2(response);
 					}},
 					{title: 'Choose Picture 2 from image library', onPress: async () => {
 						let result = await launchImageLibrary({
@@ -181,7 +201,7 @@ export default function App() {
 						setImage2(result.assets[0].uri);
 						setText2("loading...");
 						const response = await CallGoogleCloudVisionAPI(result.assets[0].base64);
-						setText2(response.text);
+						setText2(response);
 					}},
 				]}
 				cancelTitle="cancel"
