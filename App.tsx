@@ -1,6 +1,8 @@
 import React, {useState, useEffect} from 'react';
 import { StyleSheet, Text, View, Button, Image, StatusBar } from 'react-native';
 import DocumentScanner from 'react-native-document-scanner-plugin';
+import PhotoEditor from '@baronha/react-native-photo-editor';
+import ImgToBase64 from 'react-native-image-base64';
 
 async function CallGoogleCloudVisionAPI(image) {
 	const body = {
@@ -39,11 +41,13 @@ export default function App() {
 	const [compareText, setCompareText] = useState("Need two images to compare");
 	const [buttonImage, setButtonImage] = useState();
 	const [scannedImage, setScannedImage] = useState();
+	const [imageBase64String, setImageBase64String] = useState();
+	
 	const scanDocument = async () => {
 		const { scannedImages } = await DocumentScanner.scanDocument({
 			croppedImageQuality: 100,
 			maxNumDocuments: 1,
-			responseType: 'base64'
+			responseType: 'imageFilePath'
 		})
 		
 		if (scannedImages.length > 0) {
@@ -55,24 +59,41 @@ export default function App() {
         (async()=>{
 			if(scannedImage) {
 				try {
+					const path = await PhotoEditor.open({
+						path: scannedImage,
+					});
 					if (buttonImage == "buttonImage1") {
-						setImage1(scannedImage);
-						setText1("loading...");
-						const response = await CallGoogleCloudVisionAPI(scannedImage);
-						setText1(response.text);
+						setImage1(path);
 					}
 					else if (buttonImage == "buttonImage2") {
-						setImage2(scannedImage);
-						setText2("loading...");
-						const response = await CallGoogleCloudVisionAPI(scannedImage);
-						setText2(response.text);
+						setImage2(path);
 					}
+					ImgToBase64.getBase64String(path)
+						.then(base64String => setImageBase64String(base64String))
+						.catch(err => console.log(err));
 				} catch (e) {
 					console.log('e', e);
 				}
 			}
 		})();
 	},[scannedImage]);
+
+	useEffect(()=>{
+		(async()=>{
+			if(imageBase64String) {
+				if (buttonImage == "buttonImage1") {
+					setText1("loading...");
+					const response = await CallGoogleCloudVisionAPI(imageBase64String);
+					setText1(response.text);
+				}
+				else if (buttonImage == "buttonImage2") {
+					setText2("loading...");
+					const response = await CallGoogleCloudVisionAPI(imageBase64String);
+					setText2(response.text);
+				}
+			}
+		})();
+	},[imageBase64String]);
 
 	useEffect(()=>{
 		if (text1 != null && text2 != null) {
@@ -97,7 +118,7 @@ export default function App() {
 				<Text style={styles.title}>ColdSpring Plate Checking</Text>
 			</View>
 			<Text style={{fontSize: 3,}}>{' '}</Text>
-			{image1?<Image source={{uri: "data:image/jpg;base64,"+image1}} style={{flex: 1, width: '100%', height: '100%', resizeMode: 'contain',}}/>:null}
+			{image1?<Image source={{uri: image1}} style={{flex: 1, width: '100%', height: '100%', resizeMode: 'contain',}}/>:null}
 			<View style={{width: 391}}>
 				{text1?<Text>Recognized text is {text1}</Text>:null}
 			</View>
@@ -107,7 +128,7 @@ export default function App() {
 				setButtonImage("buttonImage1");
 				}}/>
 			</View>
-			{image2?<Image source={{uri: "data:image/jpg;base64,"+image2}} style={{flex: 1, width: '100%', height: '100%', resizeMode: 'contain',}}/>:null}
+			{image2?<Image source={{uri:image2}} style={{flex: 1, width: '100%', height: '100%', resizeMode: 'contain',}}/>:null}
 			<View style={{width: 391}}>
 				{text2?<Text>Recognized text is {text2}</Text>:null}
 			</View>
