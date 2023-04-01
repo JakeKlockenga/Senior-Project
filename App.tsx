@@ -33,6 +33,11 @@ async function CallGoogleCloudVisionAPI(image) {
 	return recognizedText ? recognizedText : {text: "no text recognized on this image."};
 }
 
+function FilteredText(detectedText) {
+	const filteredText = detectedText.replace(/[^A-Za-z0-9`~!@#$%^&*()-_=+\[{\]}\|;:'",<.>/?\s]+\s|[^A-Za-z0-9`~!@#$%^&*()-_=+\[{\]}\|;:'",<.>/?\s]|937+\s|937|\++\s|\+|\b1\b|(#.*)+\s|(GB-.*)+\s|(.*x.*)+\s|(.*X.*)+\s/g, '');
+	return filteredText;
+}
+
 export default function App() {
 	const [text1, setText1] = useState(null);
 	const [text2, setText2] = useState(null);
@@ -84,12 +89,16 @@ export default function App() {
 				if (buttonImage == "buttonImage1") {
 					setText1("loading...");
 					const response = await CallGoogleCloudVisionAPI(imageBase64String);
-					setText1(response.text);
+					const detectedText = response.text;
+					const filteredText = FilteredText(detectedText);
+					setText1(filteredText);
 				}
 				else if (buttonImage == "buttonImage2") {
 					setText2("loading...");
 					const response = await CallGoogleCloudVisionAPI(imageBase64String);
-					setText2(response.text);
+					const detectedText = response.text;
+					const filteredText = FilteredText(detectedText);
+					setText2(filteredText);
 				}
 			}
 		})();
