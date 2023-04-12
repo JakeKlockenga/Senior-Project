@@ -128,7 +128,7 @@ export default function App() {
 			</View>
 			<Text style={{fontSize: 3,}}>{' '}</Text>
 			{image1?<Image source={{uri: image1}} style={{flex: 1, width: '100%', height: '100%', resizeMode: 'contain',}}/>:null}
-			<View style={{width: 391}}>
+			<View style={{left: 5, width: 386}}>
 				{text1?<Text>Recognized text is {text1}</Text>:null}
 			</View>
 			<View style={{padding: 5,}}>
@@ -138,7 +138,7 @@ export default function App() {
 				}}/>
 			</View>
 			{image2?<Image source={{uri:image2}} style={{flex: 1, width: '100%', height: '100%', resizeMode: 'contain',}}/>:null}
-			<View style={{width: 391}}>
+			<View style={{left: 5, width: 386}}>
 				{text2?<Text>Recognized text is {text2}</Text>:null}
 			</View>
 			<View style={{padding: 5,}}>
